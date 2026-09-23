@@ -1,8 +1,13 @@
+using ListingsApi.Endpoints;
+using ListingsApi.Services;
+
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddCors();                      // разрешение для фронтенда
+builder.Services.AddSingleton<ListingStore>();
 
 var app = builder.Build();
 app.UseCors(p => p.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
+app.MapListingEndpoints();
 
 // временные данные — на неделе 3 заменим базой
 var listings = new[]
