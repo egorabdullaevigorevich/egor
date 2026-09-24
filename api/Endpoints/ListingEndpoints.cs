@@ -21,6 +21,15 @@ public static class ListingEndpoints
         })
         .WithName("GetListings")
         .WithSummary("Список объявлений с фильтром по району и максимальной цене");
+
+        group.MapGet("/count", (ListingStore store) =>
+        {
+            // Берем реальное количество объявлений из вашего хранилища в памяти
+            var totalCount = store.GetAll().Count(); 
+            return TypedResults.Ok(new { count = totalCount });
+        })
+        .WithName("GetListingsCount")
+        .WithSummary("Общее количество объявлений");
  
         // GET /api/listings/7
         group.MapGet("/{id:int}", Results<Ok<ListingResponse>, NotFound> (int id, ListingStore store) =>
