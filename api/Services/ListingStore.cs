@@ -12,9 +12,11 @@ public class ListingStore
     public ListingStore()
     {
         // стартовые данные, чтобы список не был пустым
-        Add(new CreateListingRequest("2-комн. рядом с метро Чиланзар", 48000, "Чиланзар", 2));
-        Add(new CreateListingRequest("3-комн. с ремонтом", 71000, "Юнусабад", 3));
-        Add(new CreateListingRequest("1-комн. студия", 32000, "Мирзо-Улугбек", 1));
+        Add(new CreateListingRequest("2-комнатная, Юнусабад", 62000, "Юнусабад", 2));
+        Add(new CreateListingRequest("3-комнатная, Чиланзар-9", 41000, "Чиланзар", 3));
+        Add(new CreateListingRequest("3-комнатная, Мирзo-Улугбек", 95000, "Мирзо-Улугбек", 3));
+        Add(new CreateListingRequest("3-комнатная, Чиланзар-8", 78600, "Чиланзар", 3));
+        Add(new CreateListingRequest("2-комнатная, Чиланзар-9", 45000, "Чиланзар", 2));
     }
  
     public IReadOnlyList<Listing> GetAll()

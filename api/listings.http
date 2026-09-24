@@ -1,0 +1,5 @@
+### Получить все объявления
+GET http://localhost:5154/api/listings
+
+### Получить количество объявлений
+GET http://localhost:5154/api/listings/count
