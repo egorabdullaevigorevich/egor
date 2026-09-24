@@ -1,0 +1,39 @@
+@host = http://localhost:5154
+ 
+### Список
+GET {{host}}/api/listings
+ 
+### Фильтр по району и цене
+GET {{host}}/api/listings?district=Чиланзар&maxPrice=50000
+ 
+### Одно объявление
+GET {{host}}/api/listings/1
+ 
+### Несуществующее — ожидаем 404
+GET {{host}}/api/listings/999
+ 
+### Создать — ожидаем 201 и заголовок Location
+POST {{host}}/api/listings
+Content-Type: application/json
+ 
+{
+  "title": "3-комн. в Юнусабаде",
+  "price": 62000,
+  "district": "Юнусабад",
+  "rooms": 3
+}
+ 
+### Ошибка валидации — ожидаем 400
+POST {{host}}/api/listings
+Content-Type: application/json
+ 
+{ "title": "", "price": -5, "district": "Чиланзар", "rooms": 2 }
+ 
+### Заменить — ожидаем 204
+PUT {{host}}/api/listings/1
+Content-Type: application/json
+ 
+{ "title": "2-комн. рядом с метро (цена снижена)", "price": 45000, "district": "Чиланзар", "rooms": 2 }
+ 
+### Удалить — ожидаем 204, повторно 
+DELETE {{host}}/api/listings/3
