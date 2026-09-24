@@ -10,7 +10,6 @@ var app = builder.Build();
 
 app.UseCors(p => p.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
 
-// ВАЖНО: Сначала регистрируем документ схемы, а только ПОТОМ эндпоинты
 app.MapOpenApi();          // документ: /openapi/v1.json
 
 app.UseSwaggerUI(options =>
