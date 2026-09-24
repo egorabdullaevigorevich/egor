@@ -79,5 +79,6 @@ public static class ListingEndpoints
     }
  
     private static ListingResponse ToResponse(Listing l) =>
-        new(l.Id, l.Title, l.Price, l.District, l.Rooms, l.CreatedAt);
+        new(l.Id, l.Title, l.Price, l.District, l.Address, l.Rooms, l.CreatedAt); // ← Добавили l.Address пятым параметром
+
 }
