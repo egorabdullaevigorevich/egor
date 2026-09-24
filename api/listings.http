@@ -36,3 +36,4 @@ Content-Type: application/json
 { "title": "2-комн. рядом с метро (цена снижена)", "price": 45000, "district": "Чиланзар", "rooms": 2 }
  
 ### Удалить — ожидаем 204, повторно 
+DELETE {{host}}/api/listings/3
