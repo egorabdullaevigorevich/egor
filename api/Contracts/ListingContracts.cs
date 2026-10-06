@@ -1,10 +1,10 @@
 namespace ListingsApi.Contracts;
  
-// то, что клиент присылает при создании
-public record CreateListingRequest(string Title, decimal Price, string District, string Address, int Rooms);
+public record CreateListingRequest(string Title, decimal Price, int Rooms, int DistrictId, string? Address);
+public record UpdateListingRequest(string Title, decimal Price, int Rooms, int DistrictId, string? Address);
  
-// то, что клиент присылает при полной замене (PUT)
-public record UpdateListingRequest(string Title, decimal Price, string District, string Address, int Rooms);
+public record ListingResponse(
+    int Id, string Title, decimal Price, int Rooms,
+    int DistrictId, string DistrictName, string? Address, DateTime CreatedAt);
  
-// то, что клиент получает
-public record ListingResponse(int Id, string Title, decimal Price, string District, string Address, int Rooms, DateTime CreatedAt);
+public record DistrictResponse(int Id, string Name, int ListingsCount);
