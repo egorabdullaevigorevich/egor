@@ -7,6 +7,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 {
     public DbSet<District> Districts => Set<District>();
     public DbSet<Listing> Listings => Set<Listing>();
+    public DbSet<User> Users => Set<User>();
  
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -30,7 +31,19 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
              .WithMany(d => d.Listings)
              .HasForeignKey(l => l.DistrictId)
              .OnDelete(DeleteBehavior.Restrict); // Нельзя удалить район с объявлениями
+
+              e.HasOne(l => l.Owner)
+               .WithMany(u => u.Listings)
+               .HasForeignKey(l => l.OwnerId)
+               .OnDelete(DeleteBehavior.SetNull);
         });
+
+           b.Entity<User>(e =>
+           {
+              e.Property(u => u.Email).HasMaxLength(254).IsRequired();
+              e.Property(u => u.PasswordHash).IsRequired();
+              e.HasIndex(u => u.Email).IsUnique();
+           });
  
         // Добавление начальных районов
         b.Entity<District>().HasData(

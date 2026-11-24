@@ -5,6 +5,6 @@ public record UpdateListingRequest(string Title, decimal Price, int Rooms, int D
  
 public record ListingResponse(
     int Id, string Title, decimal Price, int Rooms,
-    int DistrictId, string DistrictName, string? Address, DateTime CreatedAt);
+    int DistrictId, string DistrictName, string? Address, DateTime CreatedAt, bool IsOwner);
  
 public record DistrictResponse(int Id, string Name, int ListingsCount);

@@ -11,4 +11,6 @@ public class Listing
  
     public int DistrictId { get; set; }        // внешний ключ — столбец в таблице
     public District? District { get; set; }    // навигационное свойство — объект
+    public int? OwnerId { get; set; }
+    public User? Owner { get; set; }
 }

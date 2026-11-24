@@ -7,11 +7,7 @@ namespace ListingsApi.Services;
  
 public class ListingService(AppDbContext db)
 {
-    private static readonly System.Linq.Expressions.Expression<Func<Listing, ListingResponse>> ToResponse =
-        l => new ListingResponse(l.Id, l.Title, l.Price, l.Rooms,
-                                 l.DistrictId, l.District!.Name, l.Address, l.CreatedAt);
- 
-    public async Task<List<ListingResponse>> GetAllAsync(int? districtId, decimal? maxPrice)
+    public async Task<List<ListingResponse>> GetAllAsync(int? districtId, decimal? maxPrice, int? viewerId)
     {
         var query = db.Listings.AsNoTracking().AsQueryable();
  
@@ -20,21 +16,25 @@ public class ListingService(AppDbContext db)
  
         return await query
             .OrderByDescending(l => l.CreatedAt)
-            .Select(ToResponse)
+            .Select(l => new ListingResponse(l.Id, l.Title, l.Price, l.Rooms,
+                l.DistrictId, l.District!.Name, l.Address, l.CreatedAt,
+                viewerId != null && l.OwnerId == viewerId))
             .ToListAsync();
     }
  
-    public async Task<ListingResponse?> GetAsync(int id) =>
+    public async Task<ListingResponse?> GetAsync(int id, int? viewerId = null) =>
         await db.Listings.AsNoTracking()
             .Where(l => l.Id == id)
-            .Select(ToResponse)
+            .Select(l => new ListingResponse(l.Id, l.Title, l.Price, l.Rooms,
+                l.DistrictId, l.District!.Name, l.Address, l.CreatedAt,
+                viewerId != null && l.OwnerId == viewerId))
             .FirstOrDefaultAsync();
 
     // Наш бонусный метод подсчета для эндпоинта /count
     public async Task<int> GetCountAsync() =>
         await db.Listings.CountAsync();
  
-    public async Task<ListingResponse?> CreateAsync(CreateListingRequest r)
+    public async Task<ListingResponse?> CreateAsync(CreateListingRequest r, int ownerId)
     {
         if (!await db.Districts.AnyAsync(d => d.Id == r.DistrictId))
             return null;
@@ -42,17 +42,18 @@ public class ListingService(AppDbContext db)
         var listing = new Listing
         {
             Title = r.Title, Price = r.Price, Rooms = r.Rooms,
-            DistrictId = r.DistrictId, Address = r.Address, CreatedAt = DateTime.UtcNow
+            DistrictId = r.DistrictId, Address = r.Address, CreatedAt = DateTime.UtcNow,
+            OwnerId = ownerId,
         };
         db.Listings.Add(listing);
         await db.SaveChangesAsync();                 
  
-        return (await GetAsync(listing.Id))!;        
+        return (await GetAsync(listing.Id, ownerId))!;
     }
  
-    public async Task<bool> UpdateAsync(int id, UpdateListingRequest r)
+    public async Task<bool> UpdateAsync(int id, UpdateListingRequest r, int ownerId)
     {
-        var listing = await db.Listings.FindAsync(id);   
+        var listing = await db.Listings.SingleOrDefaultAsync(l => l.Id == id && l.OwnerId == ownerId);
         if (listing is null) return false;
         if (!await db.Districts.AnyAsync(d => d.Id == r.DistrictId)) return false;
  
@@ -65,9 +66,9 @@ public class ListingService(AppDbContext db)
         return true;
     }
  
-    public async Task<bool> DeleteAsync(int id)
+    public async Task<bool> DeleteAsync(int id, int ownerId)
     {
-        var listing = await db.Listings.FindAsync(id);
+        var listing = await db.Listings.SingleOrDefaultAsync(l => l.Id == id && l.OwnerId == ownerId);
         if (listing is null) return false;
  
         db.Listings.Remove(listing);

@@ -1,4 +1,28 @@
 @host = http://localhost:5154
+@email = lesson7@example.com
+@password = ChangeThisPassword2026!
+
+### Регистрация пользователя
+POST {{host}}/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "{{email}}",
+  "password": "{{password}}"
+}
+
+### Войти (сохраните token из ответа как @token)
+POST {{host}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{email}}",
+  "password": "{{password}}"
+}
+
+### Текущий пользователь
+GET {{host}}/api/auth/me
+Authorization: Bearer {{token}}
  
 ### Список
 GET {{host}}/api/listings
@@ -12,28 +36,33 @@ GET {{host}}/api/listings/1
 ### Несуществующее — ожидаем 404
 GET {{host}}/api/listings/999
  
-### Создать — ожидаем 201 и заголовок Location
+### Создать — требуется JWT владельца
 POST {{host}}/api/listings
+Authorization: Bearer {{token}}
 Content-Type: application/json
  
 {
   "title": "3-комн. в Юнусабаде",
   "price": 62000,
-  "district": "Юнусабад",
-  "rooms": 3
+  "districtId": 2,
+  "rooms": 3,
+  "address": "квартал 4, дом 7"
 }
  
-### Ошибка валидации — ожидаем 400
+### Без токена ожидаем 401
 POST {{host}}/api/listings
 Content-Type: application/json
  
-{ "title": "", "price": -5, "district": "Чиланзар", "rooms": 2 }
+{ "title": "Анонимное объявление", "price": 30000, "districtId": 1, "rooms": 2 }
  
-### Заменить — ожидаем 204
-PUT {{host}}/api/listings/1
+### Заменить своё объявление — ожидаем 204
+# Подставьте id объявления, которое создал этот пользователь.
+PUT {{host}}/api/listings/{{listingId}}
+Authorization: Bearer {{token}}
 Content-Type: application/json
  
-{ "title": "2-комн. рядом с метро (цена снижена)", "price": 45000, "district": "Чиланзар", "rooms": 2 }
+{ "title": "2-комн. рядом с метро (цена снижена)", "price": 45000, "districtId": 1, "rooms": 2, "address": "ул. Мукими, 12" }
  
-### Удалить — ожидаем 204, повторно 
-DELETE {{host}}/api/listings/3
+### Удалить своё объявление — ожидаем 204; чужое или старое без владельца даст 404
+DELETE {{host}}/api/listings/{{listingId}}
+Authorization: Bearer {{token}}
