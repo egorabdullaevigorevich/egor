@@ -124,6 +124,39 @@ namespace api.Migrations
                         });
                 });
 
+            modelBuilder.Entity("ListingsApi.Data.Entities.RefreshToken", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("RevokedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("TokenHash")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TokenHash")
+                        .IsUnique();
+
+                    b.HasIndex("UserId", "ExpiresAt");
+
+                    b.ToTable("RefreshTokens");
+                });
+
             modelBuilder.Entity("ListingsApi.Data.Entities.User", b =>
                 {
                     b.Property<int>("Id")
@@ -140,6 +173,11 @@ namespace api.Migrations
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasMaxLength(32)
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
@@ -168,6 +206,17 @@ namespace api.Migrations
                     b.Navigation("Owner");
                 });
 
+            modelBuilder.Entity("ListingsApi.Data.Entities.RefreshToken", b =>
+                {
+                    b.HasOne("ListingsApi.Data.Entities.User", "User")
+                        .WithMany("RefreshTokens")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("ListingsApi.Data.Entities.District", b =>
                 {
                     b.Navigation("Listings");
@@ -176,6 +225,8 @@ namespace api.Migrations
             modelBuilder.Entity("ListingsApi.Data.Entities.User", b =>
                 {
                     b.Navigation("Listings");
+
+                    b.Navigation("RefreshTokens");
                 });
 #pragma warning restore 612, 618
         }

@@ -1,6 +1,8 @@
 @host = http://localhost:5154
 @email = lesson7@example.com
 @password = ChangeThisPassword2026!
+@refreshToken = paste-refresh-token-from-auth-response
+@listingId = 1
 
 ### Регистрация пользователя
 POST {{host}}/api/auth/register
@@ -23,9 +25,39 @@ Content-Type: application/json
 ### Текущий пользователь
 GET {{host}}/api/auth/me
 Authorization: Bearer {{token}}
+
+### Обновить пару токенов (refresh token ротируется после использования)
+POST {{host}}/api/auth/refresh
+Content-Type: application/json
+
+{
+  "refreshToken": "{{refreshToken}}"
+}
+
+### Сменить пароль
+POST {{host}}/api/auth/change-password
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "oldPassword": "{{password}}",
+  "newPassword": "NewChangeThisPassword2026!"
+}
+
+### Выйти и отозвать refresh token
+POST {{host}}/api/auth/logout
+Content-Type: application/json
+
+{
+  "refreshToken": "{{refreshToken}}"
+}
  
 ### Список
 GET {{host}}/api/listings
+
+### Мои объявления (нужен JWT)
+GET {{host}}/api/listings/mine
+Authorization: Bearer {{token}}
  
 ### Фильтр по району и цене
 GET {{host}}/api/listings?district=Чиланзар&maxPrice=50000
@@ -66,3 +98,7 @@ Content-Type: application/json
 ### Удалить своё объявление — ожидаем 204; чужое или старое без владельца даст 404
 DELETE {{host}}/api/listings/{{listingId}}
 Authorization: Bearer {{token}}
+
+### Администратор может удалить любое объявление
+DELETE {{host}}/api/admin/listings/{{listingId}}
+Authorization: Bearer {{adminToken}}

@@ -21,6 +21,15 @@ public class ListingService(AppDbContext db)
                 viewerId != null && l.OwnerId == viewerId))
             .ToListAsync();
     }
+
+    public async Task<List<ListingResponse>> GetMineAsync(int userId) =>
+        await db.Listings.AsNoTracking()
+            .Where(listing => listing.OwnerId == userId)
+            .OrderByDescending(listing => listing.CreatedAt)
+            .Select(listing => new ListingResponse(listing.Id, listing.Title, listing.Price,
+                listing.Rooms, listing.DistrictId, listing.District!.Name, listing.Address,
+                listing.CreatedAt, true))
+            .ToListAsync();
  
     public async Task<ListingResponse?> GetAsync(int id, int? viewerId = null) =>
         await db.Listings.AsNoTracking()
@@ -66,9 +75,10 @@ public class ListingService(AppDbContext db)
         return true;
     }
  
-    public async Task<bool> DeleteAsync(int id, int ownerId)
+    public async Task<bool> DeleteAsync(int id, int ownerId, bool isAdmin = false)
     {
-        var listing = await db.Listings.SingleOrDefaultAsync(l => l.Id == id && l.OwnerId == ownerId);
+        var listing = await db.Listings.SingleOrDefaultAsync(l =>
+            l.Id == id && (isAdmin || l.OwnerId == ownerId));
         if (listing is null) return false;
  
         db.Listings.Remove(listing);

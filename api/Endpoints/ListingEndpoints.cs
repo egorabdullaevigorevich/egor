@@ -11,11 +11,16 @@ public static class ListingEndpoints
     {
         var group = app.MapGroup("/api/listings").WithTags("Listings");
  
+        group.MapGet("/mine", async (ClaimsPrincipal user, ListingService service) =>
+            TypedResults.Ok(await service.GetMineAsync(GetRequiredUserId(user))))
+        .RequireAuthorization()
+        .WithName("GetMyListings");
+
         group.MapGet("/", async (ListingService service, ClaimsPrincipal user, int? districtId, decimal? maxPrice) =>
             TypedResults.Ok(await service.GetAllAsync(districtId, maxPrice, GetUserId(user))))
         .WithName("GetListings")
         .WithSummary("Список объявлений с фильтром по району (id) и максимальной цене");
- 
+
         group.MapGet("/{id:int}", async Task<Results<Ok<ListingResponse>, NotFound>>
             (int id, ClaimsPrincipal user, ListingService service) =>
             await service.GetAsync(id, GetUserId(user)) is { } dto
@@ -60,12 +65,23 @@ public static class ListingEndpoints
  
         group.MapDelete("/{id:int}", async Task<Results<NoContent, NotFound>>
             (int id, ClaimsPrincipal user, ListingService service) =>
-            await service.DeleteAsync(id, int.Parse(user.FindFirstValue(ClaimTypes.NameIdentifier)!))
+            await service.DeleteAsync(id, GetRequiredUserId(user), user.IsInRole("Admin"))
                 ? TypedResults.NoContent() : TypedResults.NotFound())
         .RequireAuthorization()
         .WithName("DeleteListing");
+
+        app.MapDelete("/api/admin/listings/{id:int}", async Task<Results<NoContent, NotFound>>
+            (int id, ListingService service) =>
+            await service.DeleteAsync(id, 0, isAdmin: true)
+                ? TypedResults.NoContent() : TypedResults.NotFound())
+        .RequireAuthorization("AdminOnly")
+        .WithTags("Admin")
+        .WithName("AdminDeleteListing");
     }
 
     private static int? GetUserId(ClaimsPrincipal user) =>
         int.TryParse(user.FindFirstValue(ClaimTypes.NameIdentifier), out var userId) ? userId : null;
+
+    private static int GetRequiredUserId(ClaimsPrincipal user) =>
+        int.Parse(user.FindFirstValue(ClaimTypes.NameIdentifier)!);
 }

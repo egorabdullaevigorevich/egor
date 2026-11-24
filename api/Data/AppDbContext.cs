@@ -8,6 +8,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<District> Districts => Set<District>();
     public DbSet<Listing> Listings => Set<Listing>();
     public DbSet<User> Users => Set<User>();
+    public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
  
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -42,8 +43,20 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
            {
               e.Property(u => u.Email).HasMaxLength(254).IsRequired();
               e.Property(u => u.PasswordHash).IsRequired();
+              e.Property(u => u.Role).HasMaxLength(32).IsRequired();
               e.HasIndex(u => u.Email).IsUnique();
            });
+
+          b.Entity<RefreshToken>(e =>
+          {
+            e.Property(t => t.TokenHash).HasMaxLength(64).IsRequired();
+            e.HasIndex(t => t.TokenHash).IsUnique();
+            e.HasIndex(t => new { t.UserId, t.ExpiresAt });
+            e.HasOne(t => t.User)
+             .WithMany(u => u.RefreshTokens)
+             .HasForeignKey(t => t.UserId)
+             .OnDelete(DeleteBehavior.Cascade);
+          });
  
         // Добавление начальных районов
         b.Entity<District>().HasData(
